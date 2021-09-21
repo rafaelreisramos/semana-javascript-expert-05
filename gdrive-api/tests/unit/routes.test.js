@@ -1,23 +1,32 @@
 import { jest } from '@jest/globals'
-
+import { logger } from '../../src/logger.js'
 import Routes from "../../src/routes"
+import UploadHandler from '../../src/uploadHandler'
+import TestUtils from '../utils/testUtils'
 
 describe('#Routes test suite', () => {
+  const request = TestUtils.generateReadableStream(['some file bytes'])
+  const response = TestUtils.generateWritableStream(() => {})
+
   const defaultParams = {
-    request: {
+    request: Object.assign(request, {
       headers: {
         'Content-Type': 'multpart/form-data'
       },
       method: '',
       body: {}
-    },
-    response: {
+    }),
+    response: Object.assign(response, {
       setHeader: jest.fn(),
       writeHead: jest.fn(),
       end: jest.fn()
-    },
+    }),
     values: () => Object.values(defaultParams)
   }
+
+  beforeEach(() => {
+    jest.spyOn(logger, 'info').mockImplementation()
+  })
 
   describe('#handler', () => {
     it('should choose default route given an inexistent route', async () => {
@@ -112,5 +121,35 @@ describe('#Routes test suite', () => {
       expect(params.response.writeHead).toHaveBeenCalledWith(200)
       expect(params.response.end).toHaveBeenCalledWith(JSON.stringify(fileStatusesMock))   
     })  
+  })
+
+  describe('#post', () => {
+    it('should validate post route workflow', async () => {
+      const routes = new Routes('/tmp')
+      const options = {
+        ...defaultParams
+      }
+      
+      options.request.method = 'POST'
+      options.request.url = '?socketId=1'
+
+      jest.spyOn(
+        UploadHandler.prototype, 
+        UploadHandler.prototype.registerEvents.name
+      ).mockImplementation((headers, onFinish) => {
+        const writable = TestUtils.generateWritableStream(() => {})
+        writable.on('finish', onFinish)
+
+        return writable
+      })
+
+      await routes.handler(...options.values())
+      expect(UploadHandler.prototype.registerEvents).toHaveBeenCalled()
+      expect(options.response.writeHead).toHaveBeenCalledWith(200)
+      expect(options.response.end)
+        .toHaveBeenCalledWith(
+          JSON.stringify({ result: 'Files uploaded with success.' })
+        )
+    })
   })
 })
