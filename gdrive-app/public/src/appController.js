@@ -1,8 +1,9 @@
 export default class AppController {
-  constructor({ connectionManager, viewManager, dragAndDropManager }) {
+  constructor({ connectionManager, viewManager, dragAndDropManager, modalManager }) {
     this.connectionManager = connectionManager
     this.viewManager = viewManager
     this.dragAndDropManager = dragAndDropManager
+    this.modalManager = modalManager
 
     this.uploadingFiles = new Map()
   }
@@ -15,8 +16,8 @@ export default class AppController {
       onProgress: this.onProgress.bind(this)
     })
 
-    this.viewManager.configureModal()
-    this.viewManager.updateProgressBarModalStatus(0)
+    this.modalManager.configureModal()
+    this.modalManager.updateProgressBarModalStatus(0)
 
     this.dragAndDropManager.initialize({
       onDrop: this.onFileChange.bind(this)
@@ -44,7 +45,7 @@ export default class AppController {
       .map(({ percent }) => percent ?? 0)
       .reduce((total, current) => total + current, 0)
     
-    this.viewManager.updateProgressBarModalStatus(totalProgress)
+    this.modalManager.updateProgressBarModalStatus(totalProgress)
   }
 
   async onFileChange(files) {
@@ -61,15 +62,15 @@ export default class AppController {
       requests.push(this.connectionManager.uploadFile(file))
     }
 
-    this.viewManager.openModal()
-    this.viewManager.updateProgressBarModalStatus(0)
+    this.modalManager.openModal()
+    this.modalManager.updateProgressBarModalStatus(0)
 
     await Promise.all(requests)
 
-    this.viewManager.updateProgressBarModalStatus(100)
+    this.modalManager.updateProgressBarModalStatus(100)
 
     setTimeout(() => {
-      this.viewManager.closeModal()
+      this.modalManager.closeModal()
     }, 1000)
 
     await this.updateCurrentFiles()
