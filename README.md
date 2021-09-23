@@ -10,8 +10,12 @@
     - [x] Deve atingir 100% de cobertura de código em testes
 
 - Web App 
-    - [] Deve listar arquivos baixados
-    - [] Deve permitir fazer upload de arquivos de qualquer tamanho
-    - [] Deve ter função de upload via botão
-    - [] Deve exibir progresso de upload 
-    - [] Deve ter função de upload via drag and drop
+    - [x] Deve listar arquivos baixados
+    - [x] Deve permitir fazer upload de arquivos de qualquer tamanho
+    - [x] Deve ter função de upload via botão
+    - [x] Deve exibir progresso de upload 
+    - [x] Deve ter função de upload via drag and drop
+
+## Créditos ao Layout <3
+
+- O Layout foi adaptado a partir do projeto do brasileiro [Leonardo Santo](https://github.com/leoespsanto) disponibilizado no [codepen](https://codepen.io/leoespsanto/pen/KZMMKG). 
