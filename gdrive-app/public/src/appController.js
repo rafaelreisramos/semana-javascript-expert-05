@@ -59,7 +59,7 @@ export default class AppController {
 
     for (const file of files) {
       this.uploadingFiles.set(file.name, file)
-      requests.push(this.connectionManager.uploadFile(file))
+      requests.push(this.uploadFile(file))
     }
 
     this.modalManager.openModal()
@@ -76,8 +76,23 @@ export default class AppController {
     await this.updateCurrentFiles()
   }
 
+  async uploadFile(file) {
+    const formData = new FormData()
+    formData.append('files', file)
+    
+    const { apiUrl, socketId } = this.connectionManager.getConnectionInfo()
+    const response = await fetch(`${apiUrl}?socketId=${socketId}`, {
+      method: 'POST',
+      body: formData
+    })
+
+    return response.json()
+  }
+
   async updateCurrentFiles() {
-    const files = await this.connectionManager.currentFiles()
+    const { apiUrl } = this.connectionManager.getConnectionInfo()
+    const files = await (await fetch(apiUrl)).json()
+
     this.viewManager.updateCurrentFiles(files)
   }
 }
