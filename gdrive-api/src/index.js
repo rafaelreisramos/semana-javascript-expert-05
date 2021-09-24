@@ -1,4 +1,5 @@
 import https from 'https'
+import http from 'http'
 import fs from 'fs'
 import { Server } from 'socket.io'
 import { logger } from './logger.js'
@@ -6,15 +7,21 @@ import Routes from './routes.js'
 
 const PORT = process.env.PORT || 3000
 
+const isProduction = process.env.NODE_ENV === 'production'
+process.env.USER = process.env.USER ?? 'user'
+
 const localHostSSL = {
   key: fs.readFileSync('./certificates/key.pem'),
   cert: fs.readFileSync('./certificates/cert.pem')
 }
 
+const protocol = isProduction ? http : https
+const sslConfig = isProduction ? {} : localHostSSL
+
 const routes = new Routes()
 
-const server = https.createServer(
-  localHostSSL,
+const server = protocol.createServer(
+  sslConfig,
   routes.handler.bind(routes)
 )
 
@@ -31,7 +38,8 @@ io.on('connection', socket => logger.info(`connected ${socket.id}`))
 
 const startServer = () => {
   const { address, port } = server.address()
-  logger.info(`api running at https://${address}:${port}`)
+  const protocol = isProduction ? 'http' : 'https'
+  logger.info(`api running at ${protocol}://${address}:${port}`)
 }
 
 server.listen(PORT, startServer)
